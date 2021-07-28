@@ -26,9 +26,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'm4l1c#nq6*zs!c3ri4dg4(54_7bvrl5uintni6p20tijlaxv!x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
@@ -81,44 +81,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sopds.wsgi.application'
 
-#### SOPDS DATABASE SETTINGS START ####
-
-# Database
-# https://docs.djangoproject.com/en/1.9/ref/settings/#databases
-
-#DATABASES = {    
-#    'default': {
-#        'ENGINE': 'django.db.backends.mysql',
-#        'NAME': 'sopds',
-#        'HOST': 'localhost',
-#        'USER': 'sopds',
-#        'PASSWORD' : 'sopds',
-#        'OPTIONS' : {
-#            'init_command': "SET default_storage_engine=MyISAM;\
-#                             SET sql_mode='';"
-#        }
-#    }             
-#}
-
-#DATABASES = {
-#    'default': {
-#    'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#    'NAME': 'sopds',
-#    'USER': 'sopds',
-#    'PASSWORD': 'sopds',
-#    'HOST': '', # Set to empty string for localhost.
-#    'PORT': '', # Set to empty string for default.
-#    }
-#}
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }         
 }
-
-#### SOPDS DATABASE SETTINGS FINISH ####
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -226,3 +194,4 @@ CONSTANCE_CONFIG_FIELDSETS = {
 }
 
 
+from .local_settings import *

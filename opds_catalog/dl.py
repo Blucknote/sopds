@@ -6,6 +6,7 @@ import base64
 import io
 import subprocess
 
+from django.conf import settings as project_settings
 from django.http import HttpResponse, Http404
 from django.views.decorators.cache import cache_page
 
@@ -17,6 +18,7 @@ from book_tools.format import create_bookfile, mime_detector
 from book_tools.format.mimetype import Mimetype
 
 from constance import config
+import requests
 from PIL import Image
 
 def getFileName(book):
@@ -138,6 +140,18 @@ def getFileDataEpub(book):
 
 def getFileDataMobi(book):
     return getFileDataConv(book,'mobi')
+
+def s3_download(request, book_id, zip_flag):
+    book = Book.objects.get(id=book_id)
+    content_type = mime_detector.fmt(book.format)
+    book_blob = requests.get(project_settings.S3_PREFIX.format(book.filename)).content
+    response = HttpResponse()
+    response["Content-Type"] = '%s; name="%s"' % (content_type, book.filename)
+    response["Content-Disposition"] = 'attachment; filename="%s"' % book.filename
+    response["Content-Transfer-Encoding"] = 'binary'
+    response["Content-Length"] = str(book.filesize)
+    response.write(book_blob)
+    return response
 
 def Download(request, book_id, zip_flag):
     """ Загрузка файла книги """
