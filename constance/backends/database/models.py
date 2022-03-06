@@ -6,9 +6,11 @@ from django.utils.translation import ugettext_lazy as _
 try:
     from picklefield import PickledObjectField
 except ImportError:
-    raise ImproperlyConfigured("Couldn't find the the 3rd party app "
-                               "django-picklefield which is required for "
-                               "the constance database backend.")
+    raise ImproperlyConfigured(
+        "Couldn't find the the 3rd party app "
+        "django-picklefield which is required for "
+        "the constance database backend."
+    )
 
 
 class Constance(models.Model):
@@ -16,9 +18,9 @@ class Constance(models.Model):
     value = PickledObjectField(null=True, blank=True)
 
     class Meta:
-        verbose_name = _('constance')
-        verbose_name_plural = _('constances')
-        db_table = 'constance_config'
+        verbose_name = _("constance")
+        verbose_name_plural = _("constances")
+        db_table = "constance_config"
 
     def __unicode__(self):
         return self.key

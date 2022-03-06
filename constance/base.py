@@ -5,9 +5,11 @@ class Config(object):
     """
     The global config wrapper that handles the backend.
     """
+
     def __init__(self):
-        super(Config, self).__setattr__('_backend',
-            utils.import_module_attr(settings.BACKEND)())
+        super(Config, self).__setattr__(
+            "_backend", utils.import_module_attr(settings.BACKEND)()
+        )
 
     def __getattr__(self, key):
         try:

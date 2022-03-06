@@ -7,13 +7,15 @@ import picklefield.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('database', '0001_initial'),
+        ("database", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='constance',
-            name='value',
-            field=picklefield.fields.PickledObjectField(blank=True, editable=False, null=True),
+            model_name="constance",
+            name="value",
+            field=picklefield.fields.PickledObjectField(
+                blank=True, editable=False, null=True
+            ),
         ),
     ]

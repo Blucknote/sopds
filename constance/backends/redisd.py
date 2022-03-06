@@ -12,7 +12,6 @@ except ImportError:
 
 
 class RedisBackend(Backend):
-
     def __init__(self):
         super(RedisBackend, self).__init__()
         self._prefix = settings.REDIS_PREFIX
@@ -24,7 +23,8 @@ class RedisBackend(Backend):
                 import redis
             except ImportError:
                 raise ImproperlyConfigured(
-                    "The Redis backend requires redis-py to be installed.")
+                    "The Redis backend requires redis-py to be installed."
+                )
             if isinstance(settings.REDIS_CONNECTION, six.string_types):
                 self._rd = redis.from_url(settings.REDIS_CONNECTION)
             else:

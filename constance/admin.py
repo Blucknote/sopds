@@ -30,28 +30,27 @@ from .checks import get_inconsistent_fieldnames
 config = LazyConfig()
 
 
-NUMERIC_WIDGET = forms.TextInput(attrs={'size': 10})
+NUMERIC_WIDGET = forms.TextInput(attrs={"size": 10})
 
-INTEGER_LIKE = (fields.IntegerField, {'widget': NUMERIC_WIDGET})
-STRING_LIKE = (fields.CharField, {
-    'widget': forms.Textarea(attrs={'rows': 3}),
-    'required': False,
-})
+INTEGER_LIKE = (fields.IntegerField, {"widget": NUMERIC_WIDGET})
+STRING_LIKE = (
+    fields.CharField,
+    {
+        "widget": forms.Textarea(attrs={"rows": 3}),
+        "required": False,
+    },
+)
 
 FIELDS = {
-    bool: (fields.BooleanField, {'required': False}),
+    bool: (fields.BooleanField, {"required": False}),
     int: INTEGER_LIKE,
-    Decimal: (fields.DecimalField, {'widget': NUMERIC_WIDGET}),
+    Decimal: (fields.DecimalField, {"widget": NUMERIC_WIDGET}),
     str: STRING_LIKE,
-    datetime: (
-        fields.SplitDateTimeField, {'widget': widgets.AdminSplitDateTime}
-    ),
-    timedelta: (
-        fields.DurationField, {'widget': widgets.AdminTextInputWidget}
-    ),
-    date: (fields.DateField, {'widget': widgets.AdminDateWidget}),
-    time: (fields.TimeField, {'widget': widgets.AdminTimeWidget}),
-    float: (fields.FloatField, {'widget': NUMERIC_WIDGET}),
+    datetime: (fields.SplitDateTimeField, {"widget": widgets.AdminSplitDateTime}),
+    timedelta: (fields.DurationField, {"widget": widgets.AdminTextInputWidget}),
+    date: (fields.DateField, {"widget": widgets.AdminDateWidget}),
+    time: (fields.TimeField, {"widget": widgets.AdminTimeWidget}),
+    float: (fields.FloatField, {"widget": NUMERIC_WIDGET}),
 }
 
 
@@ -64,14 +63,12 @@ def parse_additional_fields(fields):
 
         field[0] = import_string(field[0])
 
-        if 'widget' in field[1]:
-            klass = import_string(field[1]['widget'])
-            field[1]['widget'] = klass(
-                **(field[1].get('widget_kwargs', {}) or {})
-            )
+        if "widget" in field[1]:
+            klass = import_string(field[1]["widget"])
+            field[1]["widget"] = klass(**(field[1].get("widget_kwargs", {}) or {}))
 
-            if 'widget_kwargs' in field[1]:
-                del field[1]['widget_kwargs']
+            if "widget_kwargs" in field[1]:
+                del field[1]["widget_kwargs"]
 
         fields[key] = field
 
@@ -81,10 +78,12 @@ def parse_additional_fields(fields):
 FIELDS.update(parse_additional_fields(settings.ADDITIONAL_FIELDS))
 
 if not six.PY3:
-    FIELDS.update({
-        long: INTEGER_LIKE,
-        unicode: STRING_LIKE,
-    })
+    FIELDS.update(
+        {
+            long: INTEGER_LIKE,
+            unicode: STRING_LIKE,
+        }
+    )
 
 
 def get_values():
@@ -94,8 +93,7 @@ def get_values():
     """
 
     # First load a mapping between config name and default value
-    default_initial = ((name, options[0])
-                       for name, options in settings.CONFIG.items())
+    default_initial = ((name, options[0]) for name, options in settings.CONFIG.items())
     # Then update the mapping with actually values from the backend
     initial = dict(default_initial, **dict(config._backend.mget(settings.CONFIG)))
 
@@ -113,28 +111,37 @@ class ConstanceForm(forms.Form):
             default = options[0]
             if len(options) == 3:
                 config_type = options[2]
-                if config_type not in settings.ADDITIONAL_FIELDS and not isinstance(default, config_type):
-                    raise ImproperlyConfigured(_("Default value type must be "
-                                                 "equal to declared config "
-                                                 "parameter type. Please fix "
-                                                 "the default value of "
-                                                 "'%(name)s'.")
-                                               % {'name': name})
+                if config_type not in settings.ADDITIONAL_FIELDS and not isinstance(
+                    default, config_type
+                ):
+                    raise ImproperlyConfigured(
+                        _(
+                            "Default value type must be "
+                            "equal to declared config "
+                            "parameter type. Please fix "
+                            "the default value of "
+                            "'%(name)s'."
+                        )
+                        % {"name": name}
+                    )
             else:
                 config_type = type(default)
 
             if config_type not in FIELDS:
-                raise ImproperlyConfigured(_("Constance doesn't support "
-                                             "config values of the type "
-                                             "%(config_type)s. Please fix "
-                                             "the value of '%(name)s'.")
-                                           % {'config_type': config_type,
-                                              'name': name})
+                raise ImproperlyConfigured(
+                    _(
+                        "Constance doesn't support "
+                        "config values of the type "
+                        "%(config_type)s. Please fix "
+                        "the value of '%(name)s'."
+                    )
+                    % {"config_type": config_type, "name": name}
+                )
             field_class, kwargs = FIELDS[config_type]
             self.fields[name] = field_class(label=name, **kwargs)
 
-            version_hash.update(smart_bytes(initial.get(name, '')))
-        self.initial['version'] = version_hash.hexdigest()
+            version_hash.update(smart_bytes(initial.get(name, "")))
+        self.initial["version"] = version_hash.hexdigest()
 
     def save(self):
         for file_field in self.files:
@@ -147,15 +154,19 @@ class ConstanceForm(forms.Form):
                 setattr(config, name, self.cleaned_data[name])
 
     def clean_version(self):
-        value = self.cleaned_data['version']
+        value = self.cleaned_data["version"]
 
         if settings.IGNORE_ADMIN_VERSION_CHECK:
             return value
 
-        if value != self.initial['version']:
-            raise forms.ValidationError(_('The settings have been modified '
-                                          'by someone else. Please reload the '
-                                          'form and resubmit your changes.'))
+        if value != self.initial["version"]:
+            raise forms.ValidationError(
+                _(
+                    "The settings have been modified "
+                    "by someone else. Please reload the "
+                    "form and resubmit your changes."
+                )
+            )
         return value
 
     def clean(self):
@@ -165,25 +176,33 @@ class ConstanceForm(forms.Form):
             return cleaned_data
 
         if get_inconsistent_fieldnames():
-            raise forms.ValidationError(_('CONSTANCE_CONFIG_FIELDSETS is missing '
-                                          'field(s) that exists in CONSTANCE_CONFIG.'))
+            raise forms.ValidationError(
+                _(
+                    "CONSTANCE_CONFIG_FIELDSETS is missing "
+                    "field(s) that exists in CONSTANCE_CONFIG."
+                )
+            )
 
         return cleaned_data
 
 
 class ConstanceAdmin(admin.ModelAdmin):
-    change_list_template = 'admin/constance/change_list.html'
+    change_list_template = "admin/constance/change_list.html"
     change_list_form = ConstanceForm
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.module_name
         return [
-            url(r'^$',
+            url(
+                r"^$",
                 self.admin_site.admin_view(self.changelist_view),
-                name='%s_%s_changelist' % info),
-            url(r'^$',
+                name="%s_%s_changelist" % info,
+            ),
+            url(
+                r"^$",
                 self.admin_site.admin_view(self.changelist_view),
-                name='%s_%s_add' % info),
+                name="%s_%s_add" % info,
+            ),
         ]
 
     def get_config_value(self, name, options, form, initial):
@@ -194,17 +213,17 @@ class ConstanceAdmin(admin.ModelAdmin):
         if value is None:
             value = getattr(config, name)
         config_value = {
-            'name': name,
-            'default': localize(default),
-            'raw_default': default,
-            'help_text': _(help_text),
-            'value': localize(value),
-            'modified': localize(value) != localize(default),
-            'form_field': form[name],
-            'is_date': isinstance(default, date),
-            'is_datetime': isinstance(default, datetime),
-            'is_checkbox': isinstance(form[name].field.widget, forms.CheckboxInput),
-            'is_file': isinstance(form[name].field.widget, forms.FileInput),
+            "name": name,
+            "default": localize(default),
+            "raw_default": default,
+            "help_text": _(help_text),
+            "value": localize(value),
+            "modified": localize(value) != localize(default),
+            "form_field": form[name],
+            "is_date": isinstance(default, date),
+            "is_datetime": isinstance(default, datetime),
+            "is_checkbox": isinstance(form[name].field.widget, forms.CheckboxInput),
+            "is_file": isinstance(form[name].field.widget, forms.FileInput),
         }
 
         return config_value
@@ -224,41 +243,41 @@ class ConstanceAdmin(admin.ModelAdmin):
         initial = get_values()
         form_cls = self.get_changelist_form(request)
         form = form_cls(initial=initial)
-        if request.method == 'POST':
-            form = form_cls(
-                data=request.POST, files=request.FILES, initial=initial
-            )
+        if request.method == "POST":
+            form = form_cls(data=request.POST, files=request.FILES, initial=initial)
             if form.is_valid():
                 form.save()
                 messages.add_message(
                     request,
                     messages.SUCCESS,
-                    _('Live settings updated successfully.'),
+                    _("Live settings updated successfully."),
                 )
-                return HttpResponseRedirect('.')
+                return HttpResponseRedirect(".")
         context = dict(
             self.admin_site.each_context(request),
             config_values=[],
             title=self.model._meta.app_config.verbose_name,
-            app_label='constance',
+            app_label="constance",
             opts=self.model._meta,
             form=form,
             media=self.media + form.media,
-            icon_type='gif' if VERSION < (1, 9) else 'svg',
+            icon_type="gif" if VERSION < (1, 9) else "svg",
         )
         for name, options in settings.CONFIG.items():
-            context['config_values'].append(
+            context["config_values"].append(
                 self.get_config_value(name, options, form, initial)
             )
 
         if settings.CONFIG_FIELDSETS:
-            context['fieldsets'] = []
+            context["fieldsets"] = []
             for fieldset_title, fields_list in settings.CONFIG_FIELDSETS.items():
-                absent_fields = [field for field in fields_list
-                                 if field not in settings.CONFIG]
+                absent_fields = [
+                    field for field in fields_list if field not in settings.CONFIG
+                ]
                 assert not any(absent_fields), (
                     "CONSTANCE_CONFIG_FIELDSETS contains field(s) that does "
-                    "not exist: %s" % ', '.join(absent_fields))
+                    "not exist: %s" % ", ".join(absent_fields)
+                )
 
                 config_values = []
 
@@ -269,15 +288,14 @@ class ConstanceAdmin(admin.ModelAdmin):
                             self.get_config_value(name, options, form, initial)
                         )
 
-                context['fieldsets'].append({
-                    'title': fieldset_title,
-                    'config_values': config_values
-                })
+                context["fieldsets"].append(
+                    {"title": fieldset_title, "config_values": config_values}
+                )
             if not isinstance(settings.CONFIG_FIELDSETS, OrderedDict):
-                context['fieldsets'].sort(key=itemgetter('title'))
+                context["fieldsets"].sort(key=itemgetter("title"))
 
         if not isinstance(settings.CONFIG, OrderedDict):
-            context['config_values'].sort(key=itemgetter('name'))
+            context["config_values"].sort(key=itemgetter("name"))
         request.current_app = self.admin_site.name
         return TemplateResponse(request, self.change_list_template, context)
 
@@ -295,10 +313,10 @@ class ConstanceAdmin(admin.ModelAdmin):
 
 class Config(object):
     class Meta(object):
-        app_label = 'constance'
-        object_name = 'Config'
-        model_name = module_name = 'config'
-        verbose_name_plural = _('config')
+        app_label = "constance"
+        object_name = "Config"
+        model_name = module_name = "config"
+        verbose_name_plural = _("config")
         abstract = False
         swapped = False
 
@@ -306,7 +324,7 @@ class Config(object):
             return False
 
         def get_change_permission(self):
-            return 'change_%s' % self.model_name
+            return "change_%s" % self.model_name
 
         @property
         def app_config(self):
@@ -314,11 +332,11 @@ class Config(object):
 
         @property
         def label(self):
-            return '%s.%s' % (self.app_label, self.object_name)
+            return "%s.%s" % (self.app_label, self.object_name)
 
         @property
         def label_lower(self):
-            return '%s.%s' % (self.app_label, self.model_name)
+            return "%s.%s" % (self.app_label, self.model_name)
 
     _meta = Meta()
 
